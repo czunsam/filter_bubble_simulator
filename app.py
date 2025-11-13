@@ -3,22 +3,23 @@ import streamlit as st
 import random
 import pandas as pd # 그래프를 그리기 위해 pandas 라이브러리 추가
 
-# --- CSS 스타일 주입 (버튼 크기 조절) (### <-- 수정됨 (CSS 추가) ###) ---
+# --- CSS 스타일 주입 (버튼 글씨 크기 조절) ---
+# 모든 버튼의 글씨 크기를 13px로 줄이고, 여백을 조정하여 컴팩트하게 만듭니다.
 st.markdown(
     """
     <style>
-    /* Streamlit의 모든 버튼을 대상으로 합니다 */
-    button {
-        font-size: 12px !important; /* 글씨 크기를 12px로 줄임 */
-        padding: 4px 8px !important; /* 버튼 내부 여백도 줄임 */
-        margin: 0px !important; /* 버튼 간 마진 조절 */
+    div.stButton > button {
+        font-size: 13px !important;  /* 글씨 크기 조절 (기본값보다 작게) */
+        padding-top: 5px !important;
+        padding-bottom: 5px !important;
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+        height: auto !important;
     }
     </style>
     """,
     unsafe_allow_html=True
 )
-# -------------------------------------
-
 
 # --- 1. 실제 영상 데이터 (각 12개, 총 36개) ---
 image_url_list = {
@@ -38,7 +39,7 @@ image_url_list = {
 
     "anime":["images/ive/1.jpeg",
              "images/ive/2.jpeg",
-             "images/ive/3.jpeg",
+             "images/ive/3.jpg",
              "images/ive/4.jpeg",
              "images/ive/5.jpeg",
              "images/ive/6.jpeg",
@@ -49,18 +50,18 @@ image_url_list = {
              "images/ive/11.jpeg",
              "images/ive/12.jpeg"],
 
-    "news": ["images/lesselafim/1.jpeg",
-             "images/lesselafim/2.jpeg",
+    "news": ["images/lesselafim/1.jpg",
+             "images/lesselafim/2.jpg",
              "images/lesselafim/3.jpg",
-             "images/lesselafim/4.jpeg",
-             "images/lesselafim/5.jpeg",
-             "images/lesselafim/6.jpeg",
-             "images/lesselafim/7.jpeg",
-             "images/lesselafim/8.jpeg",
-             "images/lesselafim/9.jpeg",
-             "images/lesselafim/10.jpeg",
-             "images/lesselafim/11.jpeg",
-             "images/lesselafim/12.jpeg"],
+             "images/lesselafim/4.jpg",
+             "images/lesselafim/5.jpg",
+             "images/lesselafim/6.jpg",
+             "images/lesselafim/7.jpg",
+             "images/lesselafim/8.jpg",
+             "images/lesselafim/9.jpg",
+             "images/lesselafim/10.jpg",
+             "images/lesselafim/11.jpg",
+             "images/lesselafim/12.jpg"],
 }
 
 #--------------------------------------
@@ -166,8 +167,8 @@ def update_history():
     new_record = {
         "클릭 횟수": st.session_state.step_count,
         "🎵 아이돌": st.session_state.feed_idol_weight,
-        "🐰 캐릭터": st.session_state.feed_anim_weight,
-        "🕹️ 게임": st.session_state.feed_news_weight
+        "🕹️ 게임": st.session_state.feed_anim_weight,
+        "🌐 뉴스": st.session_state.feed_news_weight
     }
 
 
@@ -267,7 +268,7 @@ st.markdown(
         padding: 10px;
         border-radius: 0px;
     '>
-    <h1 style='color: #333333;           
+    <h1 style='color: #333333;                 
         text-align: center;
         text-shadow: 2px 2px 4px rgba(0,0,0,0.5);  
         border:5px solid  #ffc1b6;
@@ -315,8 +316,8 @@ if 'idol_weight' not in st.session_state:
     st.session_state.weight_history.append({
         "클릭 횟수": 0,
         "🎵 아이돌": 33,
-        "🐰 캐릭터": 33,
-        "🕹️ 게임": 34
+        "🕹️ 게임": 33,
+        "🌐 뉴스": 34
     })
 if 'alert_shown' not in st.session_state:
     st.session_state.alert_shown = None # 팝업 중복 방지
@@ -335,8 +336,8 @@ if st.session_state.get('reset_flag', False):
     st.session_state.weight_history.append({
         "클릭 횟수": 0,
         "🎵 아이돌": 33,
-        "🐰 캐릭터": 33,
-        "🕹️ 게임": 34
+        "🕹️ 게임": 33,
+        "🌐 뉴스": 34
     })
     st.session_state.reset_flag = False # 플래그 다시 내리기
 
@@ -359,7 +360,7 @@ with left_col:
         unsafe_allow_html=True
     )
 
-    
+   
 # ---7-1. 피드 생성란 ---
     # '피드 생성용' 가중치 (feed_idol_weight)를 기준으로 피드 생성
     feed_list, has_critical_news = generate_feed(
@@ -404,8 +405,6 @@ with left_col:
                     st.session_state.alert_shown = None
                     st.rerun()
             
-            # (피드 카드 사이의 간격이 너무 벌어져서 제거)
-            # st.markdown("---") 
 
 
 
@@ -419,10 +418,10 @@ with left_col:
         is_balanced = False 
         alerts_to_show.append("news") 
     
-        if not has_critical_news: # '게임'를 놓쳤을 때
-            st.error(f"🚨 필터버블 발생!!! 배제된 피드: 게임피드({st.session_state.feed_news_weight}%)")
+        if not has_critical_news: # '중요 뉴스'를 놓쳤을 때
+            st.error(f"🚨 중요 알림: '뉴스' 가중치({st.session_state.feed_news_weight}%)가 낮아 '스쿨존 사고' 뉴스를 놓쳤습니다!")
         else: # 가중치는 낮지만 '중요 뉴스'가 운 좋게 포함됐을 때
-            st.error(f"🚨 필터버블 발생!!! 배제된 피드: 게임피드({WARNING_THRESHOLD}% 미만)")
+            st.error(f"🚨 경고: '뉴스' 가중치({st.session_state.feed_news_weight}%)가 {WARNING_THRESHOLD}% 미만입니다. (중요 뉴스가 피드에 겨우 포함되었습니다.)")
 
     if st.session_state.feed_idol_weight < WARNING_THRESHOLD:
         is_balanced = False 
@@ -431,7 +430,7 @@ with left_col:
 
     if st.session_state.feed_anim_weight < WARNING_THRESHOLD:
         is_balanced = False 
-        st.error(f"🚨 필터버블 발생!!! 배제된 피드: 캐릭터 피드({WARNING_THRESHOLD}% 미만)")
+        st.error(f"🚨 필터버블 발생!!! 배제된 피드: 게임 피드({WARNING_THRESHOLD}% 미만)")
         alerts_to_show.append("anime") 
 
     # 위 3개 검사에서 모두 통과(is_balanced = True)했을 때만 성공 메시지
@@ -466,12 +465,12 @@ with right_col:
         on_change=normalize_weights, args=('idol_weight',)
     )
     st.slider(
-        "🐰 캐릭터", 0, 100,
+        "🕹️ 게임 ", 0, 100,
         key="anim_weight",
         on_change=normalize_weights, args=('anim_weight',)
     )
     st.slider(
-        "🕹️ 게임", 0, 100,
+        "🌐 뉴스", 0, 100,
         key="news_weight",
         on_change=normalize_weights, args=('news_weight',)
     )
@@ -479,8 +478,7 @@ with right_col:
     
     col1, col2,col3,col4 = st.columns(4)  # 4개의 열 생성, 버튼의 간격 조정용
     with col2:
-        # (### <-- 수정됨 ###) width 파라미터 제거 (CSS가 처리)
-        if st.button("적용하기"):
+        if st.button("적용하기",width= 200):
             st.session_state.feed_idol_weight = st.session_state.idol_weight
             st.session_state.feed_anim_weight = st.session_state.anim_weight
             st.session_state.feed_news_weight = st.session_state.news_weight
@@ -489,8 +487,7 @@ with right_col:
             st.rerun()  # 피드를 업데이트하기 위해 rerun
 
     with col3:
-        # (### <-- 수정됨 ###) width 파라미터 제거 (CSS가 처리)
-        if st.button("🔄 초기화"):
+        if st.button("🔄 초기화",width= 200):
             st.session_state.reset_flag = True  # 리셋 플래그 켜기
             st.rerun()
 
@@ -532,7 +529,7 @@ if alerts_to_show and st.session_state.alert_shown != alert_signature:
         # alerts_to_show 리스트에 있는 모든 경고를 팝업에 표시
         if "news" in alerts_to_show:
             st.image(get_video_data("news", 1)["img_url"], width=100)
-            st.error(f"**배제된 피드 발생!! : 게임 피드({st.session_state.feed_news_weight}%)**")
+            st.error(f"**'사회/뉴스' 가중치({st.session_state.feed_news_weight}%)가 너무 낮아 '스쿨존 사고' 뉴스를 놓쳤습니다!**")
             st.write("---")
         
         if "idol" in alerts_to_show:
@@ -542,11 +539,10 @@ if alerts_to_show and st.session_state.alert_shown != alert_signature:
 
         if "anime" in alerts_to_show:
             st.image(get_video_data("anime", 1)["img_url"], width=100)
-            st.error(f"**배제된 피드 발생!! : 캐릭터 피드({st.session_state.feed_anim_weight}%)**")
+            st.error(f"**배제된 피드 발생!! : 게임 피드({st.session_state.feed_anim_weight}%)**")
             st.write("---")
         
         if st.button("확인했어요, 다른 정보도 골고루 보러 가기"):
             st.session_state.alert_shown = alert_signature # '확인' 누름을 기록
             st.rerun()
-
     show_alert()
